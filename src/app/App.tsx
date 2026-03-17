@@ -65,31 +65,16 @@ export default function App() {
           </div>
         )}
 
-        {/* 设备识别提示（仅手机端显示） */}
-        {(isIos || isAndroid) && (
+        {/* 设备识别提示（仅安卓显示；苹果端已隐藏） */}
+        {isAndroid && (
           <div className="px-4 py-2 bg-gray-50 border-b text-center text-sm text-gray-500">
-            当前设备：
-            {isIos && <span className="text-blue-600 font-medium">苹果 (iOS)</span>}
-            {isAndroid && <span className="text-green-600 font-medium">安卓 (Android)</span>}
+            当前设备：<span className="text-green-600 font-medium">安卓 (Android)</span>
           </div>
         )}
 
-        {/* 苹果端：安装到主屏幕 + 去信任 + 签名说明（仅 iOS 显示一个安装区） */}
+        {/* 苹果端：安装到主屏幕 + 去信任（仅 iOS 显示一个安装区，说明框已隐藏） */}
         {isIos && (
           <div className="p-6 border-b">
-            <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-sm text-amber-800">
-                点击下方「安装」即可安装到手机桌面，按提示完成<strong>信任</strong>后即可使用。
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowSignModal(true)}
-                className="mt-2 text-sm text-amber-700 underline"
-              >
-                查看签名安装步骤
-              </button>
-            </div>
-
             <div className="flex items-start gap-4">
               <img
                 src={appIconSrc}
@@ -111,14 +96,14 @@ export default function App() {
               <button
                 type="button"
                 onClick={handleIosInstall}
-                className="flex-1 bg-blue-500 text-white py-3 rounded-lg font-medium"
+                className="flex-1 bg-blue-500 text-white py-3 rounded-[80px] font-medium"
               >
                 安装
               </button>
               <button
                 type="button"
                 onClick={handleIosTrustAlert}
-                className="px-6 border border-blue-500 text-blue-500 py-3 rounded-lg font-medium"
+                className="px-6 border border-blue-500 text-blue-500 py-3 rounded-[80px] font-medium"
               >
                 去信任
               </button>
@@ -202,7 +187,7 @@ export default function App() {
         {/* App Title（仅手机端） */}
         {(isIos || isAndroid) && (
         <div className="px-6 py-4 border-b">
-          <h2 className="text-sm">【{APP_DISTRIBUTION.appName}】 幸果官方授权App</h2>
+          <h2 className="text-sm">【{APP_DISTRIBUTION.appName}】苹果官方授权App</h2>
           <div className="flex gap-2 mt-3">
             <span className="px-3 py-1 bg-blue-50 text-blue-500 text-xs rounded-full">
               Apple授权App
@@ -294,7 +279,25 @@ export default function App() {
         {/* Info Section（仅手机端） */}
         {(isIos || isAndroid) && (
         <div className="px-6 py-5">
-          <h3 className="font-medium">信息</h3>
+          <h3 className="font-medium mb-3">信息</h3>
+          <div className="rounded-xl bg-white border border-gray-100 overflow-hidden">
+            {[
+              { label: '销售商', value: 'VIP贵宾会' },
+              { label: '大小', value: '75.78 MB' },
+              { label: '兼容性', value: '可在此iPhone上使用' },
+              { label: '语言', value: '简体中文' },
+              { label: '价格', value: '免费' },
+              { label: '年龄分级', value: '18+' },
+            ].map((item, i) => (
+              <div
+                key={item.label}
+                className={`flex items-center justify-between py-3 px-4 ${i > 0 ? 'border-t border-gray-100' : ''}`}
+              >
+                <span className="text-sm text-blue-500">{item.label}</span>
+                <span className="text-sm text-gray-900 font-medium">{item.value}</span>
+              </div>
+            ))}
+          </div>
         </div>
         )}
       </div>
