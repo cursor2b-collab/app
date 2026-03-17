@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Star, User, Download } from 'lucide-react';
-import { getPlatform, APP_DISTRIBUTION } from './config';
+import { getPlatform, APP_DISTRIBUTION, isIosInAppBrowser } from './config';
 
 // 应用图标：放在 public/vipclub.png，部署后通过 /vipclub.png 访问
 const appIconSrc = '/vipclub.png';
@@ -18,6 +18,8 @@ const IOS_TRUST_ALERT_MESSAGE =
 export default function App() {
   const platform = useMemo(getPlatform, []);
   const [showSignModal, setShowSignModal] = useState(false);
+  const [showIosInstallHint, setShowIosInstallHint] = useState(false);
+  const [installLinkCopied, setInstallLinkCopied] = useState(false);
   const [pageUrl, setPageUrl] = useState('');
   const isIos = platform === 'ios';
   const isAndroid = platform === 'android';
@@ -27,9 +29,26 @@ export default function App() {
     setPageUrl(window.location.href);
   }, []);
 
+  const getIosInstallFullUrl = () =>
+    `${window.location.origin}${APP_DISTRIBUTION.iosInstallUrl}`;
+
   const handleIosInstall = () => {
-    // 当前页跳转触发 iOS 描述文件安装，安装后可添加到桌面
+    // Telegram/微信等内置浏览器会变成下载文件，需引导用 Safari 打开链接
+    if (isIosInAppBrowser()) {
+      setShowIosInstallHint(true);
+      setInstallLinkCopied(false);
+      return;
+    }
     window.location.href = APP_DISTRIBUTION.iosInstallUrl;
+  };
+
+  const handleCopyIosInstallLink = async () => {
+    try {
+      await navigator.clipboard.writeText(getIosInstallFullUrl());
+      setInstallLinkCopied(true);
+    } catch {
+      window.alert('复制失败，请手动复制：' + getIosInstallFullUrl());
+    }
   };
 
   const handleAndroidDownload = () => {
@@ -301,6 +320,44 @@ export default function App() {
         </div>
         )}
       </div>
+
+      {/* 苹果端 - Telegram/内置浏览器提示：避免点击安装变成下载文件 */}
+      {showIosInstallHint && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
+          onClick={() => setShowIosInstallHint(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="ios-install-hint-title"
+        >
+          <div
+            className="bg-white rounded-xl shadow-xl max-w-sm w-full p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="ios-install-hint-title" className="font-semibold text-lg mb-3">请使用 Safari 安装</h3>
+            <p className="text-sm text-gray-700 leading-relaxed mb-4">
+              当前在 Telegram 等内置浏览器中，点击安装会变成下载文件，无法完成描述文件安装。请点击下方「复制安装链接」，然后打开 <strong>Safari</strong>，在地址栏粘贴并访问该链接即可完成安装。
+            </p>
+            <p className="text-xs text-gray-500 mb-4">
+              或点击右上角「…」选择「在 Safari 中打开」本页，再用 Safari 点击安装。
+            </p>
+            <button
+              type="button"
+              onClick={handleCopyIosInstallLink}
+              className="w-full py-3 rounded-[80px] font-medium bg-blue-500 text-white mb-2"
+            >
+              {installLinkCopied ? '已复制，请打开 Safari 粘贴访问' : '复制安装链接'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowIosInstallHint(false)}
+              className="w-full py-2.5 text-gray-500 text-sm"
+            >
+              知道了
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 苹果端 - 签名安装步骤弹层 */}
       {showSignModal && (

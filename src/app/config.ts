@@ -20,3 +20,12 @@ export function getPlatform(): Platform {
   if (/Android/i.test(ua)) return 'android';
   return 'other';
 }
+
+/** 是否为 iOS 且处于内置浏览器（如 Telegram/微信），此类环境点击 .mobileconfig 会变成下载而非系统安装 */
+export function isIosInAppBrowser(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  if (!/iPhone|iPad|iPod/i.test(ua)) return false;
+  // Telegram、微信等内置 WebView 无法触发描述文件安装，只会下载
+  return /Telegram|WebKit.*MicroMessenger|FBAN|FBAV/i.test(ua);
+}
